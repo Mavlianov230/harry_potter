@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:harrypotter/harry_cubit.dart';
 import 'package:harrypotter/model/harry_model.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:harrypotter/harry_state.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -27,19 +29,46 @@ class HomeScreen extends StatelessWidget {
                 return Card(
                   margin: const EdgeInsets.all(10),
                   elevation: 5,
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Image.network(character.image, height: 200, fit: BoxFit.cover),
-                        const SizedBox(height: 10),
-                        Text(character.fullName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text("Прозвище: ${character.nickName}"),
-                        Text("Факультет: ${character.hogwartsHouse}"),
-                        Text("Дата рождения: ${character.birthdate}"),
-                        Text("Дети: ${getChildrenNames(character.children)}"),
-                      ],
+                  child: InkWell(
+                    onLongPress: () async {
+                      final shouldDelete = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text("Удалить персонажа?"),
+                          content: Text("Вы уверены, что хотите удалить ${character.fullName}?"),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text("Нет"),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text("Да"),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (shouldDelete ?? false) {
+
+                        await cubit.deleteCharacter(index);
+                        cubit.request();
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Image.network(character.image, height: 200, fit: BoxFit.cover),
+                          const SizedBox(height: 10),
+                          Text(character.fullName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text("Прозвище: ${character.nickName}"),
+                          Text("Факультет: ${character.hogwartsHouse}"),
+                          Text("Дата рождения: ${character.birthdate}"),
+                          Text("Дети: ${getChildrenNames(character.children)}"),
+                        ],
+                      ),
                     ),
                   ),
                 );

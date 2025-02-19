@@ -9,17 +9,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
 
-
-  // Hive.registerAdapter(HarryModelAdapter());
+  Hive.registerAdapter(HarryModelAdapter());
 
   await Hive.openBox<HarryModel>(harryBox);
 
-  runApp(
-    const MaterialApp(
-      home: Scaffold(
-        backgroundColor: Colors.white,
-        body: HomeScreen(),
-      ),
-    ),
-  );
+  runApp(const MaterialApp(
+    home: HomeScreen(),
+  ));
 }

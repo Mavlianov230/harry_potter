@@ -1,35 +1,48 @@
-import 'package:bloc/bloc.dart';
-import 'package:dio/dio.dart';
-import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:harrypotter/harry_state.dart';
+import 'package:harrypotter/model/harry_model.dart';
 import 'package:hive/hive.dart';
-import 'package:meta/meta.dart';
-import 'model/harry_model.dart';
-
-part 'harry_state.dart';
 
 class HarryCubit extends Cubit<HarryState> {
   HarryCubit() : super(HarryInitial());
 
-  Future<void> request() async {
+  void request() async {
     emit(HarryLoading());
 
     try {
-      final dio = Dio();
-      Response response = await dio.get('https://potterapi-fedeperin.vercel.app/en/characters');
-      final harryModel = (response.data as List).map((x) => HarryModel.fromJson(x)).toList();
 
-      final box = Hive.box<HarryModel>('harry_box');
-      box.clear();
-      box.addAll(harryModel);
+      final box = await Hive.openBox<HarryModel>('harry_box');
+      List<HarryModel> data = box.values.toList();
 
-      emit(HarrySuccess(list: harryModel));
-    } catch (e) {
-      final box = Hive.box<HarryModel>('harry_box');
-      if (box.isNotEmpty) {
-        emit(HarrySuccess(list: box.values.toList()));
-      } else {
-        emit(HarryFail(message: "Ошибка загрузки данных"));
+
+      if (data.isEmpty) {
+        data = await fetchDataFromServer();
+
+        await saveDataToHive(data);
       }
+
+      emit(HarrySuccess(list: data));
+    } catch (e) {
+      emit(HarryFail(message: e.toString()));
     }
+  }
+
+  Future<List<HarryModel>> fetchDataFromServer() async {
+
+    await Future.delayed(const Duration(seconds: 2));
+    return [];
+  }
+
+  Future<void> saveDataToHive(List<HarryModel> data) async {
+    final box = await Hive.openBox<HarryModel>('harry_box');
+    for (var item in data) {
+      await box.add(item);
+    }
+  }
+
+
+  Future<void> deleteCharacter(int index) async {
+    final box = await Hive.openBox<HarryModel>('harry_box');
+    await box.deleteAt(index);
   }
 }
