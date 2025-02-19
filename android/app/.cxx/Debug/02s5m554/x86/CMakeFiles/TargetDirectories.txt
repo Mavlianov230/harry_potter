@@ -1,0 +1,2 @@
+/Users/admin/AndroidStudioProjects/harry_potter/android/app/.cxx/Debug/02s5m554/x86/CMakeFiles/edit_cache.dir
+/Users/admin/AndroidStudioProjects/harry_potter/android/app/.cxx/Debug/02s5m554/x86/CMakeFiles/rebuild_cache.dir
